@@ -58,45 +58,47 @@ void addDataAdmin::addStop() // Добавить остановку
 void addDataAdmin::addBus() // Добавить автобус
 {
     setWindowTitle("Добавить автобус");
-    createComboBox("driver",10,10,300,50,additionalData[0]);
-    createLabel("driver",10,70,300,50,"Водитель");
 
-    createComboBox("route",320,10,300,50,additionalData[1]);
-    createLabel("route",320,70,300,50,"Маршрут");
+    createComboBox("driver",10,10,200,40,additionalData[0]);
+    createLabel("driver",220,10,100,40,"Водитель");
 
-    createComboBox("depot",10,110,300,50,additionalData[2]);
-    createLabel("depot",10,170,300,50,"Депо");
+    createComboBox("route",10,60,200,40,additionalData[1]);
+    createLabel("route",220,60,100,40,"Маршрут");
 
-    createComboBox("type",320,110,300,50,additionalData[3]);
-    createLabel("type",320,170,300,50,"Тип");
+    createComboBox("depot",10,110,200,40,additionalData[2]);
+    createLabel("depot",220,110,100,40,"Депо");
 
-    createLineEdit("regnum",700,10,300,50,"Введите регистрационный номер");
+    createComboBox("type",10,160,200,40,additionalData[3]);
+    createLabel("type",220,160,100,40,"Тип");
 
-    createCheckBox("online",700,70,200,20,"На линии");
+    createLineEdit("regnum",10,250,200,40,"Введите регистрационный номер");
 
-    createSpinBox("year",700,100,50,50,1960,2024);
-    createLabel("year",760,100,200,50,"Год производства");
+    this->findChild<QLineEdit*>("regnum")->setInputMask("AA999A");
+    createCheckBox("online",320,10,70,20,"На линии");
 
-    createSpinBox("pos",700,160,50,50,1,100);
-    createLabel("pos",760,160,200,50,"Позиция");
+    createSpinBox("year",320,80,60,40,1970,2024);
+    createLabel("year",320,60,200,20,"Производство");
+
+    createSpinBox("pos",320,160,60,40,1,100);
+    createLabel("pos",320,140,200,20,"Позиция");
 }
 
 void addDataAdmin::addRoute() // Добавить маршрут
 {
     setWindowTitle("Добавить маршрут");
-    createLineEdit("nameRoute",10,10,300,50,"Введите название маршрута");
+    createLineEdit("nameRoute",10,250,200,40,"Введите название маршрута");
 
-    createTimeEdit("first",320,10,100,50);
-    createLabel("first",320,70,100,50,"Время отправления первого");
+    createTimeEdit("first",10,10,100,40);
+    createLabel("first",120,10,100,40,"Время отправления первого");
 
-    createTimeEdit("last",320,100,100,50);
-    createLabel("last",320,180,100,50,"Время отправления последнего");
+    createTimeEdit("last",10,60,100,40);
+    createLabel("last",120,60,100,40,"Время отправления последнего");
 
-    createTimeEdit("interval",500,100,100,50);
-    createLabel("interval",500,180,100,50,"Интервал");
+    createTimeEdit("interval",10,110,100,40);
+    createLabel("interval",120,110,100,40,"Интервал");
 
-    createTimeEdit("overall",500,10,100,50);
-    createLabel("overall",500,70,100,50,"Общее время");
+    createTimeEdit("overall",10,160,100,40);
+    createLabel("overall",120,160,100,40,"Общее время");
 }
 
 void addDataAdmin::setAdditionalData(QList<QMap<int, QString>> data) // Считывание доп информации
@@ -143,7 +145,7 @@ void addDataAdmin::createCheckBox(QString objectName, int x, int y, int w, int h
     temp->setText(text);
 }
 
-void addDataAdmin::createSpinBox(QString objectName, int x, int y, int w, int h, int min, int max) // Создать Spinbox
+void addDataAdmin::createSpinBox(QString objectName, int x, int y, int w, int h, int min, int max) // Создаиь Spinbox
 {
     QSpinBox* temp = new QSpinBox(this);
     setWidgetParams(temp,objectName,x,y,w,h);
@@ -151,7 +153,7 @@ void addDataAdmin::createSpinBox(QString objectName, int x, int y, int w, int h,
     temp->setMaximum(max);
 }
 
-void addDataAdmin::createTimeEdit(QString objectName, int x, int y, int w, int h) // Создать timeEDit
+void addDataAdmin::createTimeEdit(QString objectName, int x, int y, int w, int h) // СОздаиь timeEDit
 {
     QTimeEdit* temp = new QTimeEdit(this);
     setWidgetParams(temp, objectName,x,y,w,h);
@@ -191,6 +193,12 @@ void addDataAdmin::on_pushButton_Ok_clicked() // Кнокп ОК
         if (type->currentText().length()==0)
         {
             QMessageBox::warning(this,"Ошибка","Не выбран тип");
+            return;
+        }
+        QLineEdit* regnum = this->findChild<QLineEdit*>("regnum");
+        if (!regnum->hasAcceptableInput())
+        {
+            QMessageBox::warning(this,"Ошибка","Некоректный регистрационный номер");
             return;
         }
         dataToDb.append({QString::number(additionalData[0].key(driver->currentText())), QString::number(additionalData[1].key(route->currentText())),

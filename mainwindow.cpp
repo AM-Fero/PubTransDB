@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent) : // Конструктор
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("PubTransDB_v1.0.0");
+    setWindowTitle("Semenov_db");
     if (ConnectToDB())createEnterButtons();
     else {
         QPushButton* tryAgain = GetNewButton("Попробовать снова",true,"-","-");
@@ -33,7 +33,7 @@ bool MainWindow::ConnectToDB() // Функция подключения к ба�
     db->setDatabaseName("Public_Transport_DB");
     db->setHostName("127.0.0.1");
     db->setPort(5432);
-    if (!db->open("postgres","user"))
+    if (!db->open("postgres","changeme"))
     {
         QMessageBox::warning(this,"Error", db->lastError().text());
         db->removeDatabase("newConnection");
@@ -254,18 +254,26 @@ void MainWindow::loadTableAdmin(int index) // Загрузка конкретн�
     switch (index)
     {
     case 0: {query = R"(SELECT "Buses".on_line as "На линии ли?", "Buses".year_create as "Год производства", "Buses".registration_number  as "Регистрационный номер",
-                     "Buses".bus_position + 1 as "Очередь на маршруте", "Drivers".name as "ФИО водителя",  "Routes".name as "Маршрут","Depots".name as "Депо", "Type_Bus".type_name as
+                     "Buses".bus_position as "Очередь на маршруте", "Drivers".name as "ФИО водителя",  "Routes".name as "Маршрут","Depots".name as "Депо", "Type_Bus".type_name as
                      "Тип автобуса" FROM public."Buses" JOIN public."Drivers" ON public."Buses".id_driver = public."Drivers".id_driver JOIN public."Depots" ON public."Buses".id_depot
                      = public."Depots".id_depot JOIN public."Type_Bus" ON public."Buses".id_type = public."Type_Bus".id_type JOIN public."Routes" ON public."Buses".id_route =
                      public."Routes".id_route)";break;}
-    case 1: {query = R"(SELECT "Drivers".name as "ФИО водителя", "Buses".registration_number as "Номер автобуса" FROM public."Drivers"LEFT JOIN public."Buses" ON public."Drivers".id_driver =
+
+    case 1: {query = R"(SELECT "Drivers".name as "ФИО водителя", "Buses".registration_number as "Номер автобуса" FROM public."Drivers" LEFT JOIN public."Buses" ON public."Drivers".id_driver =
                      public."Buses".id_driver)";break;}
+
     case 2: {query = R"(SELECT name as "Имя депо" FROM public."Depots")";break;}
-    case 3: {query = R"(SELECT "Routes".name as "Название", STRING_AGG("Stops".name,', ') as "Станции", "Routes".overall_time as "Время на весь маршрут",  "Routes".time_first as
-                     "Первый автобус", "Routes".time_last as "Последний автобус", "Routes".interval as "Интервал" FROM public."Routes-Stops" JOIN public."Routes" ON
-                     public."Routes-Stops".id_route = public."Routes".id_route JOIN public."Stops" ON public."Routes-Stops".id_stop = public."Stops".id_stop GROUP BY "Routes".name,
-                     "Routes".overall_time, "Routes".time_first, "Routes".time_last, "Routes".interval)";break;}
-    case 4: {query = R"(SELECT public."Stops".name as "Название станции", public."Stops".location as "Местоположение", STRING_AGG("Routes".name, ', ') as "Маршруты" FROM public."Routes-Stops" JOIN public."Routes" ON public."Routes-Stops".id_route = public."Routes".id_route JOIN public."Stops" ON public."Routes-Stops".id_stop = public."Stops".id_stop GROUP BY public."Stops".name, public."Stops".location)";break;}
+
+    case 3: {query = R"(SELECT "Routes".name as "Название", STRING_AGG("Stops".name,', ') as "Станции", "Routes".overall_time as "Время на весь маршрут", "Routes".time_first as
+                     "Первый автобус", "Routes".time_last as "Последний автобус", "Routes".interval as "Интервал" FROM public."Routes-Stops"  RIGHT JOIN public."Routes" ON
+                     public."Routes-Stops".id_route = public."Routes".id_route  LEFT JOIN public."Stops" ON public."Routes-Stops".id_stop = public."Stops".id_stop GROUP BY
+                     "Routes".name, "Routes".overall_time, "Routes".time_first, "Routes".time_last, "Routes".interval, public."Routes".id_route ORDER BY public."Routes".id_route)";break;}
+
+    case 4: {query = R"(SELECT public."Stops".name as "Название станции", public."Stops".location as "Местоположение", STRING_AGG("Routes".name, ', ') as "Маршруты"
+                     FROM public."Routes-Stops"  JOIN public."Routes" ON public."Routes-Stops".id_route = public."Routes".id_route  RIGHT JOIN public."Stops"
+                     ON public."Routes-Stops".id_stop = public."Stops".id_stop GROUP BY public."Stops".name, public."Stops".location, public."Stops".id_stop
+                     ORDER BY public."Stops".id_stop)";break;}
+
     case 5: {query = R"(SELECT type_name as "Типы автобусов" FROM public."Type_Bus")";break;}
     }
     FillTable(table_info,query);
